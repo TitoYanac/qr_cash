@@ -120,14 +120,13 @@ class PreferencesBusinessDao extends SharedPreferencesDataSource
 
   @override
   Future<List<dynamic>> scanQrManual(String path, String jsonString) async {
-    return [
-      {'status': '0', 'Message': 'upload failed'}
-    ];
+    return [];
   }
 
   @override
   Future<Map<String, dynamic>> registerQR(
       String path, String jsonString) async {
+    print("entro a registerQR offline preferences: $jsonString");
     User user = User.getInstance();
     Business business = Business.getInstance();
     Map<String, dynamic> data = jsonDecode(jsonString);

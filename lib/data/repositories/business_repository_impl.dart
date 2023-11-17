@@ -292,16 +292,22 @@ class BusinessRepositoryImpl extends ApiDatasource
         "latitude": qrResponse.Latitude,
         "longitude": qrResponse.Longitude
       });
+      DateTime dateTime = DateTime.now();
       qrResponse.LocalDate =
-          DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now());
+          DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
       qrResponse.fecha =
-          DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now());
-      qrResponse.hora = DateTime.now().toString().split(" ").last;
+          DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
+      qrResponse.hora = dateTime.toString().split(" ").last;
+      print("testing: ${(qrResponse.Status == '1' &&
+          qrResponse.StatusSAP == 'P' &&
+          qrResponse.Message == 'Enabled')}");
+      print("testing2: ${(qrResponse.Message == 'Offline')}");
       if (qrResponse.Status == '1' &&
           qrResponse.StatusSAP == 'P' &&
           qrResponse.Message == 'Enabled') {
         final Map<String, dynamic> responseData =
             await dao!.registerQR('registerQRUser', jsonbody);
+        print("responseData registerQR: $responseData");
         qrResponse.Status = "${responseData['status'] ?? '0'}";
         qrResponse.Message = "${responseData['Message'] ?? 'upload failed'}";
         if (qrResponse.Status == '1') {
@@ -324,7 +330,7 @@ class BusinessRepositoryImpl extends ApiDatasource
             business.qrPendingManager!.toJson());
         return qrResponse.Message!;
       } else {
-        return qrResponse.Message!;
+        return qrResponse.StatusSAP=="U"?"Used":qrResponse.Message!;
       }
     } catch (e) {
       return 'Connection failed';

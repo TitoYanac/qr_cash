@@ -142,24 +142,26 @@ class BusinessService extends Util {
     String codeExpired = translation(context)!.code_expired;
     String usedCode = translation(context)!.code_used;
     bool online = await checkConnectivity();
+    print("revisando conectividad: $online");
     return await UseCaseBusiness(isOnline: online)
         .registerQr(qrResponse)
         .then((value) {
-      Future.wait([
-        fetchDashboardTotal(),
-        fetchDashboardToday(),
-        LoadAcceptedTotalQR(),
-        LoadPendingTotalQR(),
-        LoadRejectedTotalQR(),
-      ]).then((value) => BlocProvider.of<BlocBusiness>(context)
-          .refreshBusiness(Business.getInstance()));
+          print("value response: $value");
 
       if (value == 'QR Registration Successfully') {
+
+        Future.wait([
+          fetchDashboardTotal(),
+          fetchDashboardToday(),
+          LoadAcceptedTotalQR(),
+          LoadPendingTotalQR(),
+          LoadRejectedTotalQR(),
+        ]).then((value) => BlocProvider.of<BlocBusiness>(context)
+            .refreshBusiness(Business.getInstance()));
         SuccesfulResponseService(translation(context)!.correct_code);
         return true;
       } else if (value == 'Upload failed') {
-        ErrorResponseService(
-            uploadFailed); //translation(context)!.upload_failed
+        ErrorResponseService(uploadFailed);
         return false;
       } else if (value == 'Code Expired') {
         ErrorResponseService(codeExpired);

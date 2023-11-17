@@ -53,6 +53,11 @@ class UseCaseBusiness {
   Future<String> registerQr(QrResponse qrResponse) async {
     User user = User.getInstance();
     Business business = Business.getInstance();
+    if(isOnline){
+      Position? position = await getCurrentLocation();
+      qrResponse.Latitude = position!.latitude.toString();
+      qrResponse.Longitude = position.longitude.toString();
+    }
     return await businessRepository.registerQR(user, business, qrResponse);
   }
   Future<String> registerListQRrejected(List<QrResponse> lista) async {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qrcash/presentation/atoms/big_title_component.dart';
+import 'package:qrcash/presentation/atoms/text_atom.dart';
 import 'package:qrcash/presentation/core/services/business_service.dart';
 
 import '../../../../domain/constants/language_constants.dart';
@@ -23,6 +25,12 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
   bool _showResult = false;
   bool _isLoading = false;
   bool _isChecked = false;
+  bool _isBlocked = false;
+  @override
+  void initState() {
+    qrResponse = null;
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -75,6 +83,7 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
                         setState(() {
                           _isChecked = false;
                           _showResult = false;
+                          _isBlocked = false;
                         });
                       },
                       decoration: InputDecoration(
@@ -93,6 +102,9 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
                                   _isChecked = value != null;
                                   _isLoading = false;
                                   _showResult = value != null;
+                                  if(qrResponse?.StatusSAP == "U"){
+                                    _isBlocked = true;
+                                  }
                                 });
                               });
                             },
@@ -117,7 +129,7 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
               ),
               BlocBuilder<MyBlocBtn, MyStateBtn>(
                 builder: (context, state) {
-                  return _isChecked
+                  return _isChecked && !_isBlocked
                       ? MyButtonSubmit(
                           onButtonPressed: () async {
                             if (_isChecked && qrResponse != null) {
@@ -128,6 +140,7 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
                                   setState(() {
                                     _showResult = false;
                                     _showSuccessPopup(context);
+                                    _isBlocked=true;
                                   });
                                 }
 
@@ -139,7 +152,12 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
                             }
                           },
                           label: translation(context)!.submit,
-                        )
+                        ):_isChecked && _isBlocked?
+                      ElevatedButton(onPressed: (){}, child: TextAtom(text: translation(context)!.code_used,color: Colors.white,weight: FontWeight.bold,),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+                      ),
+                      )
                       : Text(translation(context)!.enter_qr_code);
                 },
               ),
@@ -205,7 +223,7 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
                   onPressed: () {
                     Navigator.of(context).pop(); // Cierra el diálogo
                   },
-                  child: Text(translation(context)!.accept),
+                  child: TextAtom(text: translation(context)!.accept,color: Colors.white,weight: FontWeight.bold,),
                 ),
               ],
             ),

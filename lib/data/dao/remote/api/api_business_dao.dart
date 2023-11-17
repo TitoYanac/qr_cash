@@ -164,6 +164,8 @@ class ApiBusinessDao extends ApiDatasource implements BusinessDao {
   @override
   Future<Map<String, dynamic>> registerQR(
       String path, String jsonString) async {
+    print("entro a registerQR businesdao");
+    print(jsonString);
     try {
       final response = await createRowData(api[path]!, jsonString);
       if (response.statusCode == 200) {
