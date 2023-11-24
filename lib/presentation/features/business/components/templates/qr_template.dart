@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qrcash/presentation/core/services/business_service.dart';
@@ -29,6 +28,7 @@ class _QrTemplateState extends State<QrTemplate> {
     super.initState();
     scanQR(context);
   }
+/*
 
   Future<void> scanQR(contexto) async {
     String barcodeScanRes;
@@ -51,6 +51,7 @@ class _QrTemplateState extends State<QrTemplate> {
     });
     await   saveScannedQRCode(barcodeScanRes, contexto);
   }
+*/
 
   // Save the scanned QR code to SharedPreferences and fetch additional data using QrRepository
   Future<void> saveScannedQRCode(String qrCodeData, contexto) async {
@@ -165,5 +166,9 @@ class _QrTemplateState extends State<QrTemplate> {
           ),
       ],
     );
+  }
+
+  Future<void> scanQR(BuildContext context) async{
+    print("hola");
   }
 }

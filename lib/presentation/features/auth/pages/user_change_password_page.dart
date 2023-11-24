@@ -68,7 +68,7 @@ class UserChangePasswordPageState extends State<UserChangePasswordPage> {
                       LowercaseValidationRule(),
                       SpecialCharacterValidationRule(),
                       MinCharactersValidationRule(6),
-                      MaxCharactersValidationRule(12),
+                      MaxCharactersValidationRule(10),
                     },
                     controller: _passwordController,
                     maxLength: 12,
