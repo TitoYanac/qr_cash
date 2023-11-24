@@ -103,7 +103,8 @@ class AuthenticationService extends Util {
     }
     bool isOnline = await checkConnectivity();
     final String responseOtpValid = await UseCaseAuth(isOnline: isOnline).validateOtp(inputCodeOtp);
-    if (responseOtpValid == '1') {
+    print("responseOtpValid $responseOtpValid");
+    if (responseOtpValid != '1') {
       ErrorResponseService(codeOtpExpired);
       return;
     }

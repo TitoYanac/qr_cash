@@ -12,90 +12,73 @@ import 'package:intl/intl.dart';
 class BusinessService extends Util {
   BusinessService(super.context);
   Future<void> fetchVideos() async {
+    final String videosLoaded = translation(context)!.videos_loaded;
+    final String failToLoadVideos = translation(context)!.fail_to_load_videos;
     final statusText = BlocProvider.of<BlocStatusText>(context);
-    bool online = await checkConnectivity();
-    await UseCaseBusiness(isOnline: online).loadVideos().then((value) {
-      switch (value) {
-        case 'success':
-          statusText.changeStatus(translation(context)!.videos_loaded);
-          break;
-        default:
-          statusText.changeStatus(translation(context)!.fail_to_load_videos);
-          break;
-      }
-    });
+    final bool online = await checkConnectivity();
+    String response = await UseCaseBusiness(isOnline: online).loadVideos();
+    if (response != 'success') {
+      statusText.changeStatus(failToLoadVideos);
+    }
+    statusText.changeStatus(videosLoaded);
   }
 
   Future<void> fetchContacts() async {
-    bool online = await checkConnectivity();
-    await UseCaseBusiness(isOnline: online).loadContacts().then((value) {
-      switch (value) {
-        case 'success':
-          BlocProvider.of<BlocStatusText>(context)
-              .changeStatus(translation(context)!.contacts_loaded);
-          break;
-        default:
-          BlocProvider.of<BlocStatusText>(context)
-              .changeStatus(translation(context)!.fail_to_load_contacts);
-          break;
-      }
-    });
+    final String contactsLoaded = translation(context)!.contacts_loaded;
+    final String failToLoadContacts = translation(context)!.fail_to_load_contacts;
+    final BlocStatusText blocStatusText =BlocProvider.of<BlocStatusText>(context);
+    final bool online = await checkConnectivity();
+    final String response = await UseCaseBusiness(isOnline: online).loadContacts();
+    if (response != 'success') {
+      blocStatusText.changeStatus(failToLoadContacts);
+    }
+    blocStatusText.changeStatus(contactsLoaded);
   }
 
   Future<void> fetchBanks() async {
+    BlocStatusText blocStatusText =BlocProvider.of<BlocStatusText>(context);
+    final String banksLoaded = translation(context)!.banks_loaded;
+    final String failToLoadBanks = translation(context)!.fail_to_load_banks;
+
     bool online = await checkConnectivity();
-    await UseCaseBusiness(isOnline: online).loadBanks().then((value) {
-      switch (value) {
-        case 'success':
-          BlocProvider.of<BlocStatusText>(context)
-              .changeStatus(translation(context)!.banks_loaded);
-          break;
-        default:
-          BlocProvider.of<BlocStatusText>(context)
-              .changeStatus(translation(context)!.fail_to_load_banks);
-          break;
-      }
-    });
+    final String response = await UseCaseBusiness(isOnline: online).loadBanks();
+    if (response != 'success') {
+      blocStatusText.changeStatus(failToLoadBanks);
+    }
+    blocStatusText.changeStatus(banksLoaded);
   }
 
   Future<QrResponse?> validateQrManual(String codeManual) async {
-    String isAllOk = isValidQrManual(codeManual);
-    if (isAllOk == 'true') {
-      bool online = await checkConnectivity();
-      return await UseCaseBusiness(isOnline: online)
-          .validateQrCodeManual(codeManual)
-          .then((value) {
-        print(value);
-        if (value != null) {
-          if(value.Message == "QR Registration Successfully"){
-            SuccesfulResponseService(translation(context)!.valid_code);
-          }else if(value.Message == "Code Expired"){
-            ErrorResponseService(translation(context)!.code_expired);
-            return null;
-          }else if(value.Message == "Used"){
-            ErrorResponseService(translation(context)!.code_used);
-            return value;
-          }else if(value.Message == "Offline"){
-            SuccesfulResponseService(translation(context)!.offline);
-          }
-          return value;
-        } else {
-          ErrorResponseService(translation(context)!.failed_to_find_code);
-          return null;
-        }
-      });
-    } else {
-      ErrorResponseService(translation(context)!.invalid_code);
+    final String validCode = translation(context)!.valid_code;
+    final String codeExpired = translation(context)!.code_expired;
+    final String codeUsed = translation(context)!.code_used;
+    final String offline = translation(context)!.offline;
+    final String failedToFindCode = translation(context)!.failed_to_find_code;
+    Map<String, Function> messageActions = {
+      "QR Registration Successfully": () => SuccesfulResponseService(validCode),
+      "Code Expired": () => ErrorResponseService(codeExpired),
+      "Used": () => ErrorResponseService(codeUsed),
+      "Offline": () => SuccesfulResponseService(offline),
+      "failed to find code": () => ErrorResponseService(failedToFindCode),
+    };
+    final String isAllOk = isValidQrManual(codeManual);
+    if (isAllOk != 'true') {
+      ErrorResponseService(isAllOk);
       return null;
     }
+    bool online = await checkConnectivity();
+    QrResponse? response = await UseCaseBusiness(isOnline: online).validateQrCodeManual(codeManual);
+    Function? action = messageActions[response?.Message];
+    action?.call();
+    return response;
   }
 
   Future<QrResponse?> validateQrCamera(String codeCamera) async {
     // Captura los valores necesarios del context antes del async gap.
-    var validCodeMessage = translation(context)!.valid_code;
-    var usedCodeMessage = translation(context)!.code_used;
-    var failedToFindCodeMessage = translation(context)!.failed_to_find_code;
-    var errorMessage = translation(context)!.something_went_wrong;
+    final String validCodeMessage = translation(context)!.valid_code;
+    final String usedCodeMessage = translation(context)!.code_used;
+    final String failedToFindCodeMessage = translation(context)!.failed_to_find_code;
+    final String errorMessage = translation(context)!.something_went_wrong;
 
     bool online = await checkConnectivity();
     if (!online) {
@@ -138,9 +121,9 @@ class BusinessService extends Util {
   }
 
   Future<bool> registerQr(QrResponse qrResponse) async {
-    String uploadFailed = translation(context)!.error_sending_data;
-    String codeExpired = translation(context)!.code_expired;
-    String usedCode = translation(context)!.code_used;
+    final String uploadFailed = translation(context)!.error_sending_data;
+    final String codeExpired = translation(context)!.code_expired;
+    final String usedCode = translation(context)!.code_used;
     bool online = await checkConnectivity();
     print("revisando conectividad: $online");
     return await UseCaseBusiness(isOnline: online)
@@ -180,12 +163,11 @@ class BusinessService extends Util {
   }
 
   Future<bool> registerListQRrejected(List<QrResponse> lista) async {
-    String errorOffline = translation(context)!.offline;
-    String textAccepted = translation(context)!.accepted;
-    String textSuccessfulValidation =
-        translation(context)!.successful_validation;
-    String textNetworkError = translation(context)!.network_error;
-    String textSomethingWentWrong = translation(context)!.something_went_wrong;
+    final String errorOffline = translation(context)!.offline;
+    final String textAccepted = translation(context)!.accepted;
+    final String textSuccessfulValidation = translation(context)!.successful_validation;
+    final String textNetworkError = translation(context)!.network_error;
+    final String textSomethingWentWrong = translation(context)!.something_went_wrong;
 
     bool online = await checkConnectivity();
     if (!online) {
@@ -194,7 +176,7 @@ class BusinessService extends Util {
     }
 
     try {
-      var registerResponse =
+      final String registerResponse =
           await UseCaseBusiness(isOnline: online).registerListQRrejected(lista);
       await Future.wait([
         fetchDashboardTotal(),
@@ -239,12 +221,10 @@ class BusinessService extends Util {
   }
 
   Future<void> LoadAcceptedTotalQR() async {
-    bool online = await checkConnectivity();
     await UseCaseBusiness(isOnline: false).LoadAcceptedTotalQR();
   }
 
   Future<void> LoadPendingTotalQR() async {
-    bool online = await checkConnectivity();
     await UseCaseBusiness(isOnline: false).LoadPendingTotalQR();
   }
 
@@ -254,38 +234,41 @@ class BusinessService extends Util {
   }
 
   Future<bool> requestTransfer(String amount) async {
+    final String requestPayRegistrationSuccessfully = translation(context)!.request_pay_registration_successfully;
+    final String wrongNumberTryAgain = translation(context)!.wrong_number_try_again;
+    final String somethingWentWrong = translation(context)!.something_went_wrong;
+
+
     bool online = await checkConnectivity();
-    print("online: $online");
     bool isAllOk = isAmountValid(amount);
     if (isAllOk) {
-      return await UseCaseBusiness(isOnline: online)
-          .requestTransfer(amount)
-          .then((value) {
-        print("value response: $value");
-        return Future.wait([
-          fetchDashboardTotal(),
-          fetchDashboardToday(),
-          LoadAcceptedTotalQR(),
-          LoadPendingTotalQR(),
-          LoadRejectedTotalQR(),
-        ]).then((val) {
-          BlocProvider.of<BlocBusiness>(context)
-              .refreshBusiness(Business.getInstance());
-          switch (value) {
-            case "Request Pay Registration Successfully":
-              SuccesfulResponseService(
-                  translation(context)!.request_pay_registration_successfully);
-              return true;
-            default:
-              ErrorResponseService(translation(context)!.offline);
-              return false;
-          }
-        });
-      });
-    } else {
-      ErrorResponseService(translation(context)!.wrong_number_try_again);
+      ErrorResponseService(wrongNumberTryAgain);
       return false;
     }
+
+    return await UseCaseBusiness(isOnline: online)
+        .requestTransfer(amount)
+        .then((value) {
+      return Future.wait([
+        fetchDashboardTotal(),
+        fetchDashboardToday(),
+        LoadAcceptedTotalQR(),
+        LoadPendingTotalQR(),
+        LoadRejectedTotalQR(),
+      ]).then((val) {
+        BlocProvider.of<BlocBusiness>(context)
+            .refreshBusiness(Business.getInstance());
+        switch (value) {
+          case "Request Pay Registration Successfully":
+            SuccesfulResponseService(requestPayRegistrationSuccessfully);
+            return true;
+          default:
+            ErrorResponseService(somethingWentWrong);
+            return false;
+            return false;
+        }
+      });
+    });
   }
 
   bool isAmountValid(String amount) {

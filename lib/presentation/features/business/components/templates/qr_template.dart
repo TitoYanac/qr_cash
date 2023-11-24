@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qrcash/presentation/core/services/business_service.dart';
@@ -22,6 +21,7 @@ class _QrTemplateState extends State<QrTemplate> {
   String _scanBarcode = '';
   bool _showCamera = true;
   bool _showResult = false;
+
   QrResponse? qrResponse;
   @override
   void initState() {
@@ -55,34 +55,28 @@ class _QrTemplateState extends State<QrTemplate> {
 
   // Save the scanned QR code to SharedPreferences and fetch additional data using QrRepository
   Future<void> saveScannedQRCode(String qrCodeData, contexto) async {
-    if (qrCodeData != '-1') {
-      await BusinessService(context).validateQrCamera(qrCodeData).then((value) {
-        print("value: $value");
-        if(value != null){
-          BusinessService(context).registerQr(value).then((val) {
-            if (mounted && val ) {
-              setState(() {
-                qrResponse = value;
-                _showResult = true;
-              });
-            } else {
-              setState(() {
-                _showResult = false;
-              });
-            }
-          });
-        }else{
-          setState(() {
-            _showResult = false;
-          });
-        }
-      });
-    } else {
-      print("no se ha tomado ninguna foto de codigo qr");
+    BusinessService businessService = BusinessService(context);
+    if (qrCodeData == '-1') {
+      print("No se ha tomado ninguna foto de código QR");
       setState(() {
         _showResult = false;
       });
+      return;
     }
+      final value = await businessService.validateQrCamera(qrCodeData);
+
+      if (value != null) {
+        final val = await businessService.registerQr(value);
+
+        setState(() {
+          qrResponse = value;
+          _showResult = mounted && val;
+        });
+      } else {
+        setState(() {
+          _showResult = false;
+        });
+      }
   }
 
   @override

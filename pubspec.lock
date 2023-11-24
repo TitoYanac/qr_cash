@@ -845,6 +845,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.5.4"
+  native_auth:
+    dependency: "direct main"
+    description:
+      name: native_auth
+      sha256: eac0a878059148da9b497c738920eca78763d3de2c195c8ed96eb93baefac803
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.6"
   nested:
     dependency: transitive
     description:

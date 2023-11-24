@@ -5,11 +5,12 @@ class BuildTextField extends StatefulWidget {
       {super.key,
       required this.controller,
       required this.label,
-      required this.hint, this.enable});
+      required this.hint, this.enable, this.maxLength});
   final TextEditingController controller;
   final String label;
   final String hint;
   final bool? enable;
+  final double? maxLength;
 
   @override
   State<BuildTextField> createState() => _BuildTextFieldState();

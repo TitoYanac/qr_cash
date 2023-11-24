@@ -68,7 +68,7 @@ class UserNewPaswordPageState extends State<UserNewPaswordPage> {
                       MaxCharactersValidationRule(10),
                     },
                     controller: _passwordController,
-                    maxLength: 12,
+                    maxLength: 10,
 
                   ),
                 ),
