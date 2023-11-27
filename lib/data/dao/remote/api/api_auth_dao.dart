@@ -96,9 +96,6 @@ class ApiAuthDao extends ApiDatasource implements AuthDao {
   Future<Map<String, dynamic>> sendForgotPassOtp(
       String path, String jsonString) async {
     try {
-
-
-
       final response = await readRowData(api[path]!, jsonString);
 
       if (response.statusCode == 200) {
@@ -107,7 +104,7 @@ class ApiAuthDao extends ApiDatasource implements AuthDao {
         if (responseData['StatusSMS'] == 'success') {
           return responseData;
         } else {
-          return {'Status': '0', 'Message': 'phone not registered'};
+          return {'Status': '0', 'Message': 'User does not exist'};
         }
       } else {
         return {'Status': '-1', 'Message': 'network error'};

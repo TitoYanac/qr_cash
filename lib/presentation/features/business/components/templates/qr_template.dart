@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qrcash/presentation/core/services/business_service.dart';
 
@@ -18,6 +19,7 @@ class QrTemplate extends StatefulWidget {
 }
 
 class _QrTemplateState extends State<QrTemplate> {
+  late final MobileScannerController mobileScannerController;
   String _scanBarcode = '';
   bool _showCamera = true;
   bool _showResult = false;
@@ -26,6 +28,7 @@ class _QrTemplateState extends State<QrTemplate> {
   @override
   void initState() {
     super.initState();
+    mobileScannerController = MobileScannerController();
     scanQR(context);
   }
 /*
@@ -88,16 +91,23 @@ class _QrTemplateState extends State<QrTemplate> {
   }
 
   Widget _buildScannerWidget() {
-    return Container(
-      alignment: Alignment.center,
-      color: Colors.black,
-      child: const Flex(
-        direction: Axis.vertical,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          LinearProgressIndicator(),
-        ],
-      ),
+    return Column(
+      children: [
+        Expanded(
+          child: MobileScanner(
+            controller: mobileScannerController,
+            errorBuilder: (context, error, stackTrace)=>Center(child: Text(translation(context)!.failed_to_get_platform_version)),
+            onDetect: (barcode) {
+              setState(() {
+                _scanBarcode = barcode.barcodes.first.rawValue ?? '-1';
+                _showCamera = false;
+                _showResult = false;
+              });
+              saveScannedQRCode(_scanBarcode, context);
+            },
+          ),
+        ),
+      ],
     );
   }
 

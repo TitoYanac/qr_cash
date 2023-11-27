@@ -64,7 +64,7 @@ class UserService extends Util {
 
     bool isOnline = await checkConnectivity();
     String responseUpdate = await UseCaseUser(isOnline: isOnline).updateBankData(formBank);
-    if (responseUpdate == 'success') {
+    if (responseUpdate != 'success') {
       ErrorResponseService(errorUpdating);
       return false;
     }

@@ -59,7 +59,7 @@ class BusinessService extends Util {
       "Code Expired": () => ErrorResponseService(codeExpired),
       "Used": () => ErrorResponseService(codeUsed),
       "Offline": () => SuccesfulResponseService(offline),
-      "failed to find code": () => ErrorResponseService(failedToFindCode),
+      "Failed to find code": () => ErrorResponseService(failedToFindCode),
     };
     final String isAllOk = isValidQrManual(codeManual);
     if (isAllOk != 'true') {
@@ -69,6 +69,8 @@ class BusinessService extends Util {
     bool online = await checkConnectivity();
     QrResponse? response = await UseCaseBusiness(isOnline: online).validateQrCodeManual(codeManual);
     Function? action = messageActions[response?.Message];
+    print(response?.Message == "Failed to find code");
+    print(response?.Message);
     action?.call();
     return response;
   }

@@ -160,12 +160,16 @@ class AuthenticationService extends Util {
     }
     bool isOnline = await checkConnectivity();
     final String responseOtpSent = await UseCaseAuth(isOnline: isOnline).sendForgotPassOtp(phoneNumber);
-    if (responseOtpSent.length != 6) {
+    if(responseOtpSent == 'network error') {
       ErrorResponseService(networkError);
       return;
     }
-    if(responseOtpSent != 'network error') {
+    if(responseOtpSent == 'User does not exist') {
       ErrorResponseService(wrongNumber);
+      return;
+    }
+    if (responseOtpSent.length != 6) {
+      ErrorResponseService(responseOtpSent);
       return;
     }
 

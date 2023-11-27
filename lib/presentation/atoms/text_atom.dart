@@ -20,9 +20,18 @@ class _TextAtomState extends State<TextAtom> {
   }
   @override
   Widget build(BuildContext context) {
-    return Text(
-      widget.text??"",
-      style: GoogleFonts.nunito(color: widget.color,fontWeight: widget.weight??FontWeight.normal,fontSize: widget.size??14,)
+    return Row(
+      children: [
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              widget.text??"",
+              style: GoogleFonts.nunito(color: widget.color,fontWeight: widget.weight??FontWeight.normal,fontSize: widget.size??14,)
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
