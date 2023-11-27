@@ -1,0 +1,92 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new RuntimeException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+def flutterMinSdkVersion = localProperties.getProperty('flutter.minSdkVersion')
+if (flutterMinSdkVersion == null) {
+    flutterMinSdkVersion = 21
+}
+
+def flutterTargetSdkVersion = localProperties.getProperty('flutter.targetSdkVersion')
+if (flutterTargetSdkVersion == null) {
+    flutterTargetSdkVersion = 33
+}
+
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace "com.vistony.qrcash.qrcash"
+    compileSdkVersion flutterTargetSdkVersion as Integer
+    ndkVersion flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        applicationId "com.vistony.qrcash.qrcash"
+        minSdkVersion flutterMinSdkVersion as Integer
+        targetSdkVersion flutterTargetSdkVersion as Integer
+        versionCode 16 // Cambia el número de versión de código
+        versionName '1.5.16' // Cambia el nombre de la versión
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+        debug {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    buildTypes {
+        release {
+                signingConfig signingConfigs.release
+        }
+        debug {
+                signingConfig signingConfigs.debug
+        }
+    }
+
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
