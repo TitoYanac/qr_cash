@@ -116,6 +116,7 @@ print(updatedPerson);
           label: translation(context)!.full_name,
           controller: _controllers[0],
           hint: person.name,
+          maxLength: 10,
         ),
         BuildTextField(
           label: translation(context)!.phone,

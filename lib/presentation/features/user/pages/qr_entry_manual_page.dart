@@ -68,9 +68,7 @@ class _QrEntryManualPageState extends State<QrEntryManualPage> {
           padding: const EdgeInsets.all(20),
           child: ListView(
             children: [
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(

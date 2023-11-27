@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -12,69 +14,71 @@ import '../services/navigation_service.dart';
 import 'validator_handler.dart';
 
 class HandlerGPSConnection extends ValidatorHandler {
+
   @override
   Future<void> handleRequest(BuildContext context) async {
     final blocStatusText = BlocProvider.of<BlocStatusText>(context);
+    final translator = translation(context)!;
 
-    User.getInstance().buildNetworkImage(context);
-    Future.delayed(const Duration(milliseconds: 500));
+    // Funciones locales para redirección y carga de datos en segundo plano
+    void redirect() => NavigationService().navigateToAndRemoveUntil(context, const HomePage());
+    void loadUserData() => _loadUserDataInBackground(context);
+
     // Verificar si los servicios de geolocalización están habilitados
-    await checkGPSConnectivity().then((value) {
-      Future.delayed(const Duration(milliseconds: 500));
-      if (!value) {
-        blocStatusText.changeStatus(translation(context)!.gps_disabled);
-        return; // Salir si los servicios de geolocalización están deshabilitados
-      }
-    });
+    User user = User.getInstance();
 
-    // Solicitar permiso de ubicación
-    await _requestLocationPermission().then((value) {
-      if (value == LocationPermission.always ||
-          value == LocationPermission.whileInUse) {
-        blocStatusText.changeStatus(translation(context)!.gps_enabled);
+    // Cargar idioma en segundo plano
+    loadLanguage(context, user.personData!.language);
+
+    // Cargar imagen de usuario en segundo plano
+    user.buildNetworkImage(context);
+
+    bool gpsEnabled = await checkGPSConnectivity();
+    if (gpsEnabled) {
+      blocStatusText.changeStatus(translator.gps_enabled);
+    } else {
+      // Solicitar permiso de ubicación
+      LocationPermission locationPermission = await Geolocator.requestPermission();
+      if (locationPermission == LocationPermission.always || locationPermission == LocationPermission.whileInUse) {
+        blocStatusText.changeStatus(translator.gps_enabled);
       } else {
-        blocStatusText.changeStatus(
-            translation(context)!.verification_failed_or_gps_disabled);
+        blocStatusText.changeStatus(translator.verification_failed_or_gps_disabled);
       }
-    });
 
-    //cargar los datos de usuario online
-    await Future.delayed(const Duration(milliseconds: 500)).then((value) {
-      User user = User.getInstance();
-      // cagamos datos de la aplicacion en paralelo
-      Future.wait([
-        loadLanguage(context, user.personData!.language),
-        BusinessService(context).fetchContacts(),
-        BusinessService(context).fetchBanks(),
-        BusinessService(context).fetchVideos(),
-        BusinessService(context).fetchDashboardTotal(), // dashboard banner
-        BusinessService(context).fetchDashboardToday(), // dashboard body
-        BusinessService(context).LoadListTotalQR(), // lista total Accepted qr
-        //cargar lista scaneada de qr de shared preferences
-      ]).then((value) {
-        Future.wait([
-          BusinessService(context).LoadAcceptedTotalQR(), // lista total Accepted qr
-          BusinessService(context).LoadPendingTotalQR(), // lista total Pending qr
-          BusinessService(context).LoadRejectedTotalQR(), // lista total Rejected qr
-        ]).then((value) => NavigationService()
-            .navigateToAndRemoveUntil(context, const HomePage()));
-      });
-    });
+      // Cargar los datos de usuario online en segundo plano
+    }
+    loadUserData();
 
-    //NavigationService().navigateTo(context, HomePage());
+    // Navegar a la página principal y eliminar la pila de navegación
+    redirect();
   }
 
-  Future<LocationPermission> _requestLocationPermission() async {
-    final status = await Geolocator.requestPermission();
-    return status;
+  Future<void> _loadUserDataInBackground(BuildContext context) async {
+    BusinessService businessService = BusinessService(context);
+
+    // Cargar datos de la aplicación en paralelo
+    await Future.wait([
+      businessService.fetchContacts(),
+      businessService.fetchBanks(),
+      businessService.fetchVideos(),
+      businessService.fetchDashboardTotal(),
+      businessService.fetchDashboardToday(),
+      businessService.LoadListTotalQR(),
+    ]);
+
+    // Cargar listas adicionales en paralelo
+    await Future.wait([
+      businessService.LoadAcceptedTotalQR(),
+      businessService.LoadPendingTotalQR(),
+      businessService.LoadRejectedTotalQR(),
+    ]);
   }
 
   Future<bool> checkGPSConnectivity() async {
-    final gps = await Geolocator.isLocationServiceEnabled();
-    return gps;
+    return await Geolocator.isLocationServiceEnabled();
   }
 
-  Future<void> loadLanguage(context, language) async {
+  Future<void> loadLanguage(BuildContext context, String language) async {
     language = language == '' ? 'en' : language;
     MyApp.setLocale(context, Locale(language));
   }

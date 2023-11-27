@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:qrcash/domain/models/business/business.dart';
 import 'package:qrcash/domain/models/user/user.dart';
+import 'package:qrcash/presentation/features/auth/bloc/bloc_timer.dart';
+import 'package:qrcash/presentation/features/auth/pages/user_otp_receiver_forgot_pass_page.dart';
 import 'package:qrcash/presentation/features/business/bloc/bloc_business.dart';
 import 'package:qrcash/presentation/features/business/bloc/bloc_business_state.dart';
 import 'package:qrcash/presentation/features/user/bloc/bloc_user.dart';
@@ -85,6 +87,13 @@ class _MyAppState extends State<MyApp> {
         locale: _currentLocale, // Use the stored or default language
         supportedLocales: AppLocalizations.supportedLocales,
         home: const SplashScreen(),
+        /*home: BlocProvider(
+          create: (context) => TimerBloc(),
+          child: const UserOtpReceiverForgotPassPage(
+            number: '123456789',
+            codeOTP: '123456',
+          ),
+        ),*/
       ),
     );
 

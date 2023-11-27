@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-
-import '../../../../../domain/constants/language_constants.dart';
+import 'package:flutter/services.dart';
 
 class MyInputFormNumber extends StatefulWidget {
   const MyInputFormNumber({
     Key? key,
-    required this.controller, required this.labelText, this.prefiIcon, required this.maxLength,
+    required this.controller,
+    required this.labelText,
+    this.prefiIcon,
+    required this.maxLength,
   }) : super(key: key);
 
   final TextEditingController controller;
@@ -25,24 +27,31 @@ class _MyInputFormNumberState extends State<MyInputFormNumber> {
       prefixIcon: widget.prefiIcon,
       focusedBorder: OutlineInputBorder(
         borderSide: const BorderSide(
-          color: Colors.grey, // Customize the border color here
-          width: 2.0, // Adjust the border thickness here
+          color: Colors.grey,
+          width: 2.0,
         ),
-        borderRadius: BorderRadius.circular(20.0), // Customize the border radius here
+        borderRadius: BorderRadius.circular(20.0),
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(
-          color: Colors.grey, // Customize the border color here
-          width: 2.0, // Adjust the border thickness here
+          color: Colors.grey,
+          width: 2.0,
         ),
-        borderRadius: BorderRadius.circular(20.0), // Customize the border radius here
+        borderRadius: BorderRadius.circular(20.0),
       ),
       errorBorder: OutlineInputBorder(
         borderSide: const BorderSide(
-          color: Colors.red, // Customize the error border color here if needed
-          width: 2.0, // Adjust the border thickness here
+          color: Colors.red,
+          width: 2.0,
         ),
-        borderRadius: BorderRadius.circular(20.0), // Customize the border radius here
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 2.0,
+        ),
+        borderRadius: BorderRadius.circular(20.0),
       ),
     );
 
@@ -50,12 +59,14 @@ class _MyInputFormNumberState extends State<MyInputFormNumber> {
       children: [
         Expanded(
           child: Container(
-            padding:
-            const EdgeInsets.only(top: 40, right: 16, left: 16, bottom: 8),
+            padding: const EdgeInsets.only(top: 40, right: 16, left: 16, bottom: 8),
             child: TextFormField(
               controller: widget.controller,
               keyboardType: TextInputType.number,
-              autocorrect: true,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              autocorrect: false,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               maxLength: widget.maxLength,
               autofocus: false,
@@ -64,18 +75,26 @@ class _MyInputFormNumberState extends State<MyInputFormNumber> {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return translation(context)!.please_enter_your_number;
+                  return 'Por favor, ingrese su número.';
                 }
                 if (value.length != widget.maxLength) {
-                  return '${translation(context)!.the_number_should_be_have} ${widget.maxLength} ${translation(context)!.digits}';
+                  return 'El número debe tener ${widget.maxLength} dígitos.';
+                }
+                if (!_isPositiveInteger(value)) {
+                  return 'Por favor, ingrese un número entero positivo.';
                 }
                 return null;
               },
-              decoration: inputDecoration, // Use the defined InputDecoration here
+              decoration: inputDecoration,
             ),
           ),
         ),
       ],
     );
+  }
+
+  bool _isPositiveInteger(String? value) {
+    // Validar si la cadena contiene solo dígitos y es un número positivo
+    return value != null && int.tryParse(value) != null && int.parse(value) > 0;
   }
 }

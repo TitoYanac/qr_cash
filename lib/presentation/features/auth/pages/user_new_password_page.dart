@@ -65,10 +65,10 @@ class UserNewPaswordPageState extends State<UserNewPaswordPage> {
                       LowercaseValidationRule(),
                       SpecialCharacterValidationRule(),
                       MinCharactersValidationRule(6),
-                      MaxCharactersValidationRule(12),
+                      MaxCharactersValidationRule(10),
                     },
                     controller: _passwordController,
-                    maxLength: 12,
+                    maxLength: 10,
 
                   ),
                 ),

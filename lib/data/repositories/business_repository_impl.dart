@@ -90,8 +90,10 @@ class BusinessRepositoryImpl extends ApiDatasource
   Future<String> loadDashboardToday(
       Business business, String phoneNumber, String dateformat) async {
     try {
-      final String jsonbody = jsonEncode({"mobileID": phoneNumber, "date": dateformat});
-      final List<dynamic> responseData = await dao!.loadDashboardToday('qrResumenTotalDia', jsonbody);
+      final String jsonbody =
+          jsonEncode({"mobileID": phoneNumber, "date": dateformat});
+      final List<dynamic> responseData =
+          await dao!.loadDashboardToday('qrResumenTotalDia', jsonbody);
       print("loading dashboard today: $responseData");
       if (responseData.isNotEmpty) {
         print("como no esta vacio guardaremos sus valores");
@@ -103,7 +105,7 @@ class BusinessRepositoryImpl extends ApiDatasource
             jsonEncode(responseData));
 
         return 'success';
-      }else{
+      } else {
         return 'load dashboard today failed';
       }
     } catch (e) {
@@ -144,9 +146,7 @@ class BusinessRepositoryImpl extends ApiDatasource
 
       if (responseData.isNotEmpty) {
         business.listTotalQr = ResponseQrResumenEntity.fromJson(responseData);
-        await PreferencesBusinessDao().createListData(
-            "qRResumenListado${User.getInstance().personData!.uMobileID}",
-            jsonEncode(responseData));
+        await PreferencesBusinessDao().createListData( "qRResumenListado${User.getInstance().personData!.uMobileID}", jsonEncode(responseData));
         QrResponseManager manager = QrResponseManager(Data: []);
         for (var item in business.listTotalQr.data) {
           QrResponse qrres = QrResponse(
@@ -169,9 +169,7 @@ class BusinessRepositoryImpl extends ApiDatasource
         }
 
         business.qrAcceptedManager = manager;
-        await PreferencesBusinessDao().createListData(
-            "qRAcceptedTotal${User.getInstance().personData!.uMobileID}",
-            manager.toJson());
+        await PreferencesBusinessDao().createListData("qRAcceptedTotal${User.getInstance().personData!.uMobileID}",manager.toJson());
         SharedPreferences preferences = await SharedPreferences.getInstance();
         return 'success';
       }
@@ -241,10 +239,12 @@ class BusinessRepositoryImpl extends ApiDatasource
     try {
       final String jsonbody =
           jsonEncode({"qr": qrCamera, "mobile": phoneNumber});
-      final List<dynamic> responseData = await dao!.scanQrCamera('scanQR', jsonbody);
+      final List<dynamic> responseData =
+          await dao!.scanQrCamera('scanQR', jsonbody);
       print("validateQrCodeCamera: $responseData");
       if (responseData.isNotEmpty) {
-        QrResponse qrResponse = QrResponseEntity.fromJson(responseData[0]).toQrResponse();
+        QrResponse qrResponse =
+            QrResponseEntity.fromJson(responseData[0]).toQrResponse();
         if (qrResponse.QR != '') {
           return qrResponse;
         } else {
@@ -259,20 +259,16 @@ class BusinessRepositoryImpl extends ApiDatasource
   }
 
   @override
-  Future<QrResponse?> validateQrCodeManual(
-      String qrManual, String phoneNumber) async {
+  Future<QrResponse?> validateQrCodeManual(String qrManual, String phoneNumber) async {
     try {
-      final String jsonbody =
-          jsonEncode({"qr": qrManual, "mobile": phoneNumber});
-      final List<dynamic> responseData =
-          await dao!.scanQrManual('scanQRManual', jsonbody);
+      final String jsonbody = jsonEncode({
+        "qr": qrManual,
+        "mobile": phoneNumber,
+      });
+      final List<dynamic> responseData = await dao!.scanQrManual('scanQRManual', jsonbody);
       if (responseData.isNotEmpty) {
         QrResponse qrResponse = QrResponseEntity.fromJson(responseData[0]).toQrResponse();
-        if (qrResponse.QR != '') {
-          return qrResponse;
-        } else {
-          return null;
-        }
+        return qrResponse;
       } else {
         return null;
       }
@@ -293,14 +289,11 @@ class BusinessRepositoryImpl extends ApiDatasource
         "longitude": qrResponse.Longitude
       });
       DateTime dateTime = DateTime.now();
-      qrResponse.LocalDate =
-          DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
-      qrResponse.fecha =
-          DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
+      qrResponse.LocalDate = DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
+      qrResponse.fecha = DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
       qrResponse.hora = dateTime.toString().split(" ").last;
-      print("testing: ${(qrResponse.Status == '1' &&
-          qrResponse.StatusSAP == 'P' &&
-          qrResponse.Message == 'Enabled')}");
+      print(
+          "testing: ${(qrResponse.Status == '1' && qrResponse.StatusSAP == 'P' && qrResponse.Message == 'Enabled')}");
       print("testing2: ${(qrResponse.Message == 'Offline')}");
       if (qrResponse.Status == '1' &&
           qrResponse.StatusSAP == 'P' &&
@@ -330,7 +323,7 @@ class BusinessRepositoryImpl extends ApiDatasource
             business.qrPendingManager!.toJson());
         return qrResponse.Message!;
       } else {
-        return qrResponse.StatusSAP=="U"?"Used":qrResponse.Message!;
+        return qrResponse.StatusSAP == "U" ? "Used" : qrResponse.Message!;
       }
     } catch (e) {
       return 'Connection failed';
@@ -338,47 +331,50 @@ class BusinessRepositoryImpl extends ApiDatasource
   }
 
   @override
-  Future<String> registerListQRrejected(Business business, String phoneNumber) async {
+  Future<String> registerListQRrejected(
+      Business business, String phoneNumber) async {
     try {
       var listQrPending = [];
       for (var o in business.qrPendingManager!.Data) {
         var item = {
-            "u_qr": o.QR,
-            "u_Latitude": o.Latitude,
-            "u_Longitude": o.Longitude
-          };
+          "u_qr": o.QR,
+          "u_Latitude": o.Latitude,
+          "u_Longitude": o.Longitude
+        };
         listQrPending.add(item);
       }
 
-      final String jsonbody = jsonEncode({
-        "code": phoneNumber,
-        "listQR": listQrPending
-      });
+      final String jsonbody =
+          jsonEncode({"code": phoneNumber, "listQR": listQrPending});
 
       print(jsonbody);
-      final responseData = await dao!.registerListQR('registerListQRUser', jsonbody);
-print("responseData:  $responseData");
+      final responseData =
+          await dao!.registerListQR('registerListQRUser', jsonbody);
+      print("responseData:  $responseData");
       if (responseData.isNotEmpty) {
         print("responseData que recibo : $responseData");
         business.qrPendingManager!.Data = [];
 
-        PreferencesBusinessDao().createListData("qRPendingTotal$phoneNumber","");        //qRPendingTotal
+        PreferencesBusinessDao()
+            .createListData("qRPendingTotal$phoneNumber", ""); //qRPendingTotal
         return 'success';
-      }{
+      }
+      {
         for (var o in business.qrPendingManager!.Data) {
           business.qrRejectedManager!.addQr(o);
         }
         String key1 = "qRPendingTotal";
-        PreferencesBusinessDao().createListData(key1,business.qrPendingManager!.toJson());
+        PreferencesBusinessDao()
+            .createListData(key1, business.qrPendingManager!.toJson());
         business.qrPendingManager!.Data = [];
-        PreferencesBusinessDao().createListData("qRPendingTotal$phoneNumber","");
+        PreferencesBusinessDao()
+            .createListData("qRPendingTotal$phoneNumber", "");
 
         String rejectedJson = business.qrRejectedManager!.toJson();
         String key = "qRRejectedTotal$phoneNumber";
-        PreferencesBusinessDao().createListData(key,rejectedJson);
+        PreferencesBusinessDao().createListData(key, rejectedJson);
         return 'all rejected';
       }
-
     } catch (e) {
       return 'error';
     }

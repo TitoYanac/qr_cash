@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qrcash/presentation/core/services/business_service.dart';
 
@@ -20,15 +19,19 @@ class QrTemplate extends StatefulWidget {
 }
 
 class _QrTemplateState extends State<QrTemplate> {
+  late final MobileScannerController mobileScannerController;
   String _scanBarcode = '';
   bool _showCamera = true;
   bool _showResult = false;
+
   QrResponse? qrResponse;
   @override
   void initState() {
     super.initState();
+    mobileScannerController = MobileScannerController();
     scanQR(context);
   }
+/*
 
   Future<void> scanQR(contexto) async {
     String barcodeScanRes;
@@ -51,37 +54,32 @@ class _QrTemplateState extends State<QrTemplate> {
     });
     await   saveScannedQRCode(barcodeScanRes, contexto);
   }
+*/
 
   // Save the scanned QR code to SharedPreferences and fetch additional data using QrRepository
   Future<void> saveScannedQRCode(String qrCodeData, contexto) async {
-    if (qrCodeData != '-1') {
-      await BusinessService(context).validateQrCamera(qrCodeData).then((value) {
-        print("value: $value");
-        if(value != null){
-          BusinessService(context).registerQr(value).then((val) {
-            if (mounted && val ) {
-              setState(() {
-                qrResponse = value;
-                _showResult = true;
-              });
-            } else {
-              setState(() {
-                _showResult = false;
-              });
-            }
-          });
-        }else{
-          setState(() {
-            _showResult = false;
-          });
-        }
-      });
-    } else {
-      print("no se ha tomado ninguna foto de codigo qr");
+    BusinessService businessService = BusinessService(context);
+    if (qrCodeData == '-1') {
+      print("No se ha tomado ninguna foto de código QR");
       setState(() {
         _showResult = false;
       });
+      return;
     }
+      final value = await businessService.validateQrCamera(qrCodeData);
+
+      if (value != null) {
+        final val = await businessService.registerQr(value);
+
+        setState(() {
+          qrResponse = value;
+          _showResult = mounted && val;
+        });
+      } else {
+        setState(() {
+          _showResult = false;
+        });
+      }
   }
 
   @override
@@ -93,16 +91,23 @@ class _QrTemplateState extends State<QrTemplate> {
   }
 
   Widget _buildScannerWidget() {
-    return Container(
-      alignment: Alignment.center,
-      color: Colors.black,
-      child: const Flex(
-        direction: Axis.vertical,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          LinearProgressIndicator(),
-        ],
-      ),
+    return Column(
+      children: [
+        Expanded(
+          child: MobileScanner(
+            controller: mobileScannerController,
+            errorBuilder: (context, error, stackTrace)=>Center(child: Text(translation(context)!.failed_to_get_platform_version)),
+            onDetect: (barcode) {
+              setState(() {
+                _scanBarcode = barcode.barcodes.first.rawValue ?? '-1';
+                _showCamera = false;
+                _showResult = false;
+              });
+              saveScannedQRCode(_scanBarcode, context);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -165,5 +170,9 @@ class _QrTemplateState extends State<QrTemplate> {
           ),
       ],
     );
+  }
+
+  Future<void> scanQR(BuildContext context) async{
+    print("hola");
   }
 }
